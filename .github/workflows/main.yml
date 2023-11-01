@@ -8,6 +8,6 @@ jobs:
   Build:
     runs-on: ubuntu-latest
     steps:
-    - name: Build the Docker image
     - uses: actions/checkout@v3
-    - run: docker build . --file Dockerfile --tag MDP-Classwork-Assignment-1:$(date +%s)
+    - name: Build the Docker image
+      run: docker build . --file Dockerfile --tag MDP-Classwork-Assignment-1:$(date +%s)
