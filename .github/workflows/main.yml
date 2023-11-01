@@ -24,4 +24,4 @@ jobs:
         password: ${{ secrets.DOCKERHUB_TOKEN }}
     
     - name: Publish the Docker image
-      run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/mdp-classwork-assignment-1:latest
+      run: docker push tsvetelinachakarova/mdp-classwork-assignment-1:latest
