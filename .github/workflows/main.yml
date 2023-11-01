@@ -11,4 +11,4 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Build the Docker image
-      run: docker build -t MDP-Classwork-Assignment-1 src/
+      run: docker build -t mdp-classwork-assignment-1 src/
