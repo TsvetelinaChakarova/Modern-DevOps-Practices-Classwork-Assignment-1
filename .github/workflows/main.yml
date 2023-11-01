@@ -20,7 +20,7 @@ jobs:
       uses: docker/login-action@v2
       with:
         username: tsvetelinachakarova
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
+        password: ${{ secrets.DOCKERHUB_PASSWORD }}
     
     - name: Publish the Docker image
       run: docker push mdp-classwork-assignment-1:latest
