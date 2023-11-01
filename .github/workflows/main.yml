@@ -9,6 +9,6 @@ jobs:
   Build:
     runs-on: ubuntu-latest
     steps:
-    - name: Build the Docker image
     - uses: actions/checkout@v3
+    - name: Build the Docker image
       run: docker build -t MDP-Classwork-Assignment-1:$(date +%s) src/
