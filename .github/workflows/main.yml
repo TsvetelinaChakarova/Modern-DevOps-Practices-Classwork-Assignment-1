@@ -32,4 +32,4 @@ jobs:
       with:
         path: .
     - name: Publish the Docker image
-      run: docker push tsvetelinachakarova/mdp-classwork-assignment-1:latest
+      run: docker push docker.io/tsvetelinachakarova/mdp-classwork-assignment-1:latest
