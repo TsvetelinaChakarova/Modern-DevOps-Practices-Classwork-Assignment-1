@@ -31,6 +31,7 @@ jobs:
       uses: actions/download-artifact@v3
       with:
         path: .
-    - name: Publish the Docker image
+    - name: Tag
       run: docker tag mdp-classwork-assignment-1:latest mdp-classwork-assignment-1:latest
+    - name: Publish the Docker image
       run: docker push mdp-classwork-assignment-1:latest
