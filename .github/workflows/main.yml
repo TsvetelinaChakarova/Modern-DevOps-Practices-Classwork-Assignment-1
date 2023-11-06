@@ -12,21 +12,22 @@ jobs:
       uses: actions/upload-artifact@v3
       with:
         path: . 
+    - name: Build the Docker image
+      run: docker build -t mdp-classwork-assignment-1 src/
+  
+  Publish:
+    runs-on: ubuntu-latest
+    steps:
     - name: Login to DockerHub
       uses: docker/login-action@v3
       with:
         username: ${{ secrets.DOCKERHUB_USERNAME }}
         password: ${{ secrets.DOCKERHUB_TOKEN }}
-  
-  Publish:
-    runs-on: ubuntu-latest
-    steps:
+    
     - name: Download repository
       uses: actions/download-artifact@v3
       with:
         path: .
-    - name: Build the Docker image
-      run: docker build -t mdp-classwork-assignment-1 src/
     - name: Add tag to the Docker image
       run: docker tag mdp-classwork-assignment-1 ${{ secrets.DOCKERHUB_USERNAME }}/mdp-classwork-assignment-1
     - name: Publish the Docker image
