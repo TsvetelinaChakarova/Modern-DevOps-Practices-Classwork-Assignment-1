@@ -5,12 +5,13 @@
   jobs:
 
     Scan-SonarCloud:
-      name: SonarCloud
       runs-on: ubuntu-latest
       steps:
-        - uses: actions/checkout@v3
+        - name: Checkout
+          uses: actions/checkout@v3
           with:
-            fetch-depth: 0  
+            fetch-depth: 0
+        
         - name: SonarCloud Scan
           uses: SonarSource/sonarcloud-github-action@master
           env:
@@ -18,26 +19,32 @@
             SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
     
     Scan-Snyk:
-      name: Snyk
       runs-on: ubuntu-latest
+      needs: Scan-SonarCloud
       steps:
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v3
+      
       - uses: snyk/actions/python-3.10@master
         with:
           args: ${{ github.workspace }}/src
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
     
     Checkout-Upload:
       runs-on: ubuntu-latest
+      needs: Scan-Snyk
       steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v3  
+        
       - name: Upload the repository
         uses: actions/upload-artifact@v3
         with:
           name: code
           path: . 
+
     
     Build-Publish:
       runs-on: ubuntu-latest
