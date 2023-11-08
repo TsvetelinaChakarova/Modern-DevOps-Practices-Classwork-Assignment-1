@@ -1,40 +1,54 @@
-name:  Build and publish docker image
-on:
-  push:
-    branches: [ main ]
-jobs:
-  Checkout-Upload:
-    runs-on: ubuntu-latest
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v3
-    - name: Upload the repository
-      uses: actions/upload-artifact@v3
-      with:
-        name: code
-        path: . 
-  
-  Build-Publish:
-    runs-on: ubuntu-latest
-    needs: Checkout-Upload
-    steps:
-    - name: Download repository
-      uses: actions/download-artifact@v3
-      with:
-        name: code
-        path: .
-    
-    - name: Build the Docker image
-      run: docker build -t mdp-classwork-assignment-1 src/
-    
-    - name: Login to DockerHub
-      uses: docker/login-action@v3
-      with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
+  name:  Build and publish docker image
+  on:
+    push:
+      branches: [ main ]
+  jobs:
 
-    - name: Add tag to the Docker image
-      run: docker tag mdp-classwork-assignment-1 ${{ secrets.DOCKERHUB_USERNAME }}/mdp-classwork-assignment-1
+    Scan-SonarCloud:
+      name: SonarCloud
+      runs-on: ubuntu-latest
+      steps:
+        - uses: actions/checkout@v3
+          with:
+            fetch-depth: 0  
+        - name: SonarCloud Scan
+          uses: SonarSource/sonarcloud-github-action@master
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
+            SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+    Checkout-Upload:
+      runs-on: ubuntu-latest
+      steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Upload the repository
+        uses: actions/upload-artifact@v3
+        with:
+          name: code
+          path: . 
     
-    - name: Publish the Docker image
-      run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/mdp-classwork-assignment-1
+    Build-Publish:
+      runs-on: ubuntu-latest
+      needs: Checkout-Upload
+      steps:
+      - name: Download repository
+        uses: actions/download-artifact@v3
+        with:
+          name: code
+          path: .
+      
+      - name: Build the Docker image
+        run: docker build -t mdp-classwork-assignment-1 src/
+      
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Add tag to the Docker image
+        run: docker tag mdp-classwork-assignment-1 ${{ secrets.DOCKERHUB_USERNAME }}/mdp-classwork-assignment-1
+      
+      - name: Publish the Docker image
+        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/mdp-classwork-assignment-1
