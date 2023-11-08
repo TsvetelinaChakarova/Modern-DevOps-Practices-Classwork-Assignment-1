@@ -4,7 +4,7 @@ on:
     branches: [ main ]
 jobs:
   Checkout-Upload:
-    runs-on: ubuntu-latest
+    runs-on: alpine-latest
     steps:
     - name: Checkout
       uses: actions/checkout@v3
@@ -15,7 +15,7 @@ jobs:
         path: . 
   
   Build-Publish:
-    runs-on: ubuntu-latest
+    runs-on: alpine-latest
     needs: Checkout-Upload
     steps:
     - name: Download repository
