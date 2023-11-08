@@ -21,7 +21,7 @@
       name: Snyk
       runs-on: ubuntu-latest
       steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v3
       - uses: snyk/actions/python@master
         with:
           args: ${{ github.workspace }}/src
