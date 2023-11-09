@@ -70,7 +70,7 @@
           path: . 
 
     
-    Build-Publish:
+    Build-And-Trivy-Scan:
       runs-on: ubuntu-latest
       needs: Checkout-Upload
       steps:
@@ -83,22 +83,6 @@
       - name: Build the Docker image
         run: docker build -t mdp-classwork-assignment-1 src/
       
-      - name: Login to DockerHub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Add tag to the Docker image
-        run: docker tag mdp-classwork-assignment-1 ${{ secrets.DOCKERHUB_USERNAME }}/mdp-classwork-assignment-1
-      
-      - name: Publish the Docker image
-        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/mdp-classwork-assignment-1
-
-    Trivy-Scan:
-      runs-on: ubuntu-latest
-      needs: Build-Publish
-      steps:
       - name: Scan built Docker image with Trivy
         uses: aquasecurity/trivy-action@master
         with:
@@ -110,3 +94,19 @@
           template: '@/contrib/sarif.tpl'
           output: 'trivy-results.sarif'
           severity: 'CRITICAL,HIGH'
+
+    Publish:
+      runs-on: ubuntu-latest
+      needs: Build-And-Trivy-Scan
+      steps:
+      - name: Login to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Add tag to the Docker image
+        run: docker tag mdp-classwork-assignment-1 ${{ secrets.DOCKERHUB_USERNAME }}/mdp-classwork-assignment-1
+      
+      - name: Publish the Docker image
+        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/mdp-classwork-assignment-1
