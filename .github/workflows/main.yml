@@ -16,6 +16,16 @@
             rules: '/lint/rules/changelog.js'
             config: '/lint/config/changelog.yml'
             args: './CHANGELOG.md'
+
+      editorconfig:
+        runs-on: ubuntu-latest
+        steps:
+        - name: Checkout
+          uses: actions/checkout@v2
+
+        - name: Run editorconfig-checker
+          uses: editorconfig-checker/action-editorconfig-checker@main
+          run: editorconfig-checker
     
       Check-Style-Lint-flake8:
         runs-on: ubuntu-latest
