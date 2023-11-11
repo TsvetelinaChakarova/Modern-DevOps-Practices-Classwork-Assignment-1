@@ -1,122 +1,135 @@
-  name:  Build and publish docker image
-  on:
-    push:
-      branches: [ main ]
-  jobs:
+    name:  Build and publish docker image
+    on:
+      push:
+        branches: [ main ]
+    jobs:
 
-    Check-Style-Lint-flake8:
-      runs-on: ubuntu-latest
-      steps:
-        - name: Setup Python
-          uses: actions/setup-python@v1
-          with:
-            python-version: '3.10'
-            architecture: x64
-        
+      Check-Makrdown-Files:
+        runs-on: ubuntu-latest
+        steps:
         - name: Checkout
-          uses: actions/checkout@master
-        
-        - name: Install flake8
-          run: pip install flake8
-        
-        - name: Run flake8
-          uses: suo/flake8-github-action@releases/v1
+          uses: actions/checkout@v2
+
+        - name: Markdown Lint changelog file
+          uses: avto-dev/markdown-lint@v1
           with:
-            checkName: 'Check-Style-Lint-flake8'
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-
-    Scan-SonarCloud:
-      runs-on: ubuntu-latest
-      needs: Check-Style-Lint-flake8
-      steps:
-        - name: Checkout
-          uses: actions/checkout@v3
-          with:
-            fetch-depth: 0
-        
-        - name: SonarCloud Scan
-          uses: SonarSource/sonarcloud-github-action@master
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
-            SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+            rules: '/lint/rules/changelog.js'
+            config: '/lint/config/changelog.yml'
+            args: './CHANGELOG.md'
     
-
-    # Scan-Snyk:
-    #   runs-on: ubuntu-latest
-    #   needs: Scan-SonarCloud
-    #   steps:
-    #   - name: Checkout
-    #     uses: actions/checkout@v3
-      
-    #   - uses: snyk/actions/python-3.10@master
-    #     with:
-    #       args: ${{ github.workspace }}/src
-    #     env:
-    #       SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-
-    
-    Checkout-Upload:
-      runs-on: ubuntu-latest
-      needs: Scan-SonarCloud
-      steps:
-      - name: Checkout
-        uses: actions/checkout@v3  
-        
-      - name: Upload the repository
-        uses: actions/upload-artifact@v3
-        with:
-          name: code
-          path: . 
-
-    
-    Build-And-Trivy-Scan:
-      runs-on: ubuntu-latest
-      needs: Checkout-Upload
-      steps:
-      - name: Download repository
-        uses: actions/download-artifact@v3
-        with:
-          name: code
-          path: .
-      
-      - name: Build the Docker image
-        run: docker build -t mdp-classwork-assignment-1 src/
-      
-      - name: Scan built Docker image with Trivy
-        uses: aquasecurity/trivy-action@master
-        with:
-          image-ref: 'docker.io/${{ secrets.DOCKERHUB_USERNAME }}/mdp-classwork-assignment-1'
-          exit-code: '1'
-          ignore-unfixed: true
-          vuln-type: 'os,library'
-          format: 'template'
-          template: '@/contrib/sarif.tpl'
-          output: 'trivy-results.sarif'
-          severity: 'CRITICAL,HIGH'
-
-    Publish:
-      runs-on: ubuntu-latest
-      needs: Build-And-Trivy-Scan
-      steps:
-      - name: Download repository
-        uses: actions/download-artifact@v3
-        with:
-          name: code
-          path: .
+      Check-Style-Lint-flake8:
+        runs-on: ubuntu-latest
+        steps:
+          - name: Setup Python
+            uses: actions/setup-python@v1
+            with:
+              python-version: '3.10'
+              architecture: x64
           
-      - name: Build the Docker image
-        run: docker build -t mdp-classwork-assignment-1 src/
+          - name: Checkout
+            uses: actions/checkout@master
+          
+          - name: Install flake8
+            run: pip install flake8
+          
+          - name: Run flake8
+            uses: suo/flake8-github-action@releases/v1
+            with:
+              checkName: 'Check-Style-Lint-flake8'
+            env:
+              GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Login to DockerHub
-        uses: docker/login-action@v3
-        with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Add tag to the Docker image
-        run: docker tag mdp-classwork-assignment-1 ${{ secrets.DOCKERHUB_USERNAME }}/mdp-classwork-assignment-1
+      Scan-SonarCloud:
+        runs-on: ubuntu-latest
+        needs: Check-Style-Lint-flake8
+        steps:
+          - name: Checkout
+            uses: actions/checkout@v3
+            with:
+              fetch-depth: 0
+          
+          - name: SonarCloud Scan
+            uses: SonarSource/sonarcloud-github-action@master
+            env:
+              GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  
+              SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       
-      - name: Publish the Docker image
-        run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/mdp-classwork-assignment-1
+
+      # Scan-Snyk:
+      #   runs-on: ubuntu-latest
+      #   needs: Scan-SonarCloud
+      #   steps:
+      #   - name: Checkout
+      #     uses: actions/checkout@v3
+        
+      #   - uses: snyk/actions/python-3.10@master
+      #     with:
+      #       args: ${{ github.workspace }}/src
+      #     env:
+      #       SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+
+      
+      Checkout-Upload:
+        runs-on: ubuntu-latest
+        needs: Scan-SonarCloud
+        steps:
+        - name: Checkout
+          uses: actions/checkout@v3  
+          
+        - name: Upload the repository
+          uses: actions/upload-artifact@v3
+          with:
+            name: code
+            path: . 
+
+      
+      Build-And-Trivy-Scan:
+        runs-on: ubuntu-latest
+        needs: Checkout-Upload
+        steps:
+        - name: Download repository
+          uses: actions/download-artifact@v3
+          with:
+            name: code
+            path: .
+        
+        - name: Build the Docker image
+          run: docker build -t mdp-classwork-assignment-1 src/
+        
+        - name: Scan built Docker image with Trivy
+          uses: aquasecurity/trivy-action@master
+          with:
+            image-ref: 'docker.io/${{ secrets.DOCKERHUB_USERNAME }}/mdp-classwork-assignment-1'
+            exit-code: '1'
+            ignore-unfixed: true
+            vuln-type: 'os,library'
+            format: 'template'
+            template: '@/contrib/sarif.tpl'
+            output: 'trivy-results.sarif'
+            severity: 'CRITICAL,HIGH'
+
+      Publish:
+        runs-on: ubuntu-latest
+        needs: Build-And-Trivy-Scan
+        steps:
+        - name: Download repository
+          uses: actions/download-artifact@v3
+          with:
+            name: code
+            path: .
+            
+        - name: Build the Docker image
+          run: docker build -t mdp-classwork-assignment-1 src/
+
+        - name: Login to DockerHub
+          uses: docker/login-action@v3
+          with:
+            username: ${{ secrets.DOCKERHUB_USERNAME }}
+            password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+        - name: Add tag to the Docker image
+          run: docker tag mdp-classwork-assignment-1 ${{ secrets.DOCKERHUB_USERNAME }}/mdp-classwork-assignment-1
+        
+        - name: Publish the Docker image
+          run: docker push ${{ secrets.DOCKERHUB_USERNAME }}/mdp-classwork-assignment-1
