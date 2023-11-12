@@ -72,12 +72,6 @@
         - name: Checkout
           uses: actions/checkout@v3
 
-        - name: Download
-          uses: actions/download-artifact@v3
-          with:
-            name: code
-            path: .
-
         - name: Install dependencies
           run: pip3 install -r src/requirements.txt
 
