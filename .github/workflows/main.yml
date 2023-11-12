@@ -17,7 +17,7 @@
             pip install -r src/requirements.txt
 
         - name: Run unit tests
-          run: python3 -m unittest src/app_test.py
+          run: python3 -m unittest src/app/app_test.py
 
       Check-Makrdown-Files:
         runs-on: ubuntu-latest
