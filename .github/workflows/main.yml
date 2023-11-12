@@ -4,56 +4,6 @@
         branches: [ main ]
     jobs:
 
-      # Run-Unit-Tests:
-      #   runs-on: ubuntu-latest
-      #   steps:
-      #   - name: Checkout
-      #     uses: actions/checkout@v2
-
-      #   - name: Install dependencies
-      #     run: |
-      #       cd $GITHUB_WORKSPACE
-      #       python -m pip install --upgrade pip
-      #       pip install -r src/requirements.txt
-
-      #   - name: Run unit tests
-      #     run: python3 -m unittest src/app/app_test.py
-
-      Check-Hardcoded-Secrets:
-        runs-on: ubuntu-latest
-        steps:
-        - name: Checkout
-          uses: actions/checkout@v2
-        - name: Gitleaks
-          uses: gitleaks/gitleaks-action@v2
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      Check-Makrdown-Files:
-        runs-on: ubuntu-latest
-        steps:
-        - name: Checkout
-          uses: actions/checkout@v2
-
-        - name: Markdown Lint changelog file
-          uses: avto-dev/markdown-lint@v1
-          with:
-            rules: '/lint/rules/changelog.js'
-            config: '/lint/config/changelog.yml'
-            args: './CHANGELOG.md'
-
-      editorconfig:
-        runs-on: ubuntu-latest
-        steps:
-        - name: Checkout
-          uses: actions/checkout@v2
-
-        - name: Run editorconfig-checker
-          uses: editorconfig-checker/action-editorconfig-checker@main
-
-        - name: Run editorconfig-checker
-          run: editorconfig-checker
-
       Check-Style-Lint-flake8:
         runs-on: ubuntu-latest
         steps:
@@ -77,9 +27,64 @@
               GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 
+      Check-Makrdown-Files:
+        runs-on: ubuntu-latest
+        steps:
+        - name: Checkout
+          uses: actions/checkout@v2
+
+        - name: Markdown Lint changelog file
+          uses: avto-dev/markdown-lint@v1
+          with:
+            rules: '/lint/rules/changelog.js'
+            config: '/lint/config/changelog.yml'
+            args: './CHANGELOG.md'
+
+
+      Check-Editorconfig:
+        runs-on: ubuntu-latest
+        steps:
+        - name: Checkout
+          uses: actions/checkout@v2
+
+        - name: Run editorconfig-checker
+          uses: editorconfig-checker/action-editorconfig-checker@main
+
+        - name: Run editorconfig-checker
+          run: editorconfig-checker
+
+      
+      Check-Hardcoded-Secrets:
+        runs-on: ubuntu-latest
+        steps:
+        - name: Checkout
+          uses: actions/checkout@v2
+        - name: Gitleaks
+          uses: gitleaks/gitleaks-action@v2
+          env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
+      Run-Unit-Tests:
+        runs-on: ubuntu-latest
+        needs: [Check-Style-Lint-flake8, Check-Makrdown-Files, Check-Editorconfig, Check-Hardcoded-Secrets]
+        steps:
+        - name: Checkout
+          uses: actions/checkout@v2
+
+        - name: Install dependencies
+          run: |
+            cd $GITHUB_WORKSPACE
+            python -m pip install --upgrade pip
+            pip install -r src/requirements.txt
+
+        - name: Run unit tests
+          run: python3 -m unittest src/app/app_test.py
+
+
       Scan-SonarCloud:
         runs-on: ubuntu-latest
-        needs: Check-Style-Lint-flake8
+        needs: Run-Unit-Tests
         steps:
           - name: Checkout
             uses: actions/checkout@v3
@@ -95,7 +100,7 @@
 
       # Scan-Snyk:
       #   runs-on: ubuntu-latest
-      #   needs: Scan-SonarCloud
+      #   needs: Run-Unit-Tests
       #   steps:
       #   - name: Checkout
       #     uses: actions/checkout@v3
