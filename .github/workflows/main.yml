@@ -53,7 +53,7 @@
         - name: Run editorconfig-checker
           run: editorconfig-checker
 
-      
+
       Check-Hardcoded-Secrets:
         runs-on: ubuntu-latest
         steps:
