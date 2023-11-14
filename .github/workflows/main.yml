@@ -111,7 +111,7 @@
 
       Scan-SonarCloud:
         runs-on: ubuntu-latest
-        needs: Run-Unit-Tests
+        needs: [Run-Unit-Tests,Database-Migrations]
         steps:
           - name: Checkout
             uses: actions/checkout@v3
@@ -127,7 +127,7 @@
 
       # Scan-Snyk:
       #   runs-on: ubuntu-latest
-      #   needs: Run-Unit-Tests
+      #   needs: [Run-Unit-Tests,Database-Migrations]
       #   steps:
       #   - name: Checkout
       #     uses: actions/checkout@v3
